@@ -1,0 +1,64 @@
+{
+  "enemies": [
+    {
+      "id": "melee_1",
+      "type": "melee",
+      "hp": 30,
+      "moveSpeed": 120,
+      "damage": 10,
+      "expReward": 5,
+      "attackRange": 40
+    },
+    {
+      "id": "melee_2",
+      "type": "melee",
+      "hp": 60,
+      "moveSpeed": 150,
+      "damage": 15,
+      "expReward": 10,
+      "attackRange": 40
+    },
+    {
+      "id": "ranged_1",
+      "type": "ranged",
+      "hp": 20,
+      "moveSpeed": 80,
+      "damage": 8,
+      "expReward": 8,
+      "fireRate": 1.5,
+      "bulletSpeed": 200,
+      "detectionRange": 600,
+      "attackRange": 250
+    },
+    {
+      "id": "ranged_2",
+      "type": "ranged",
+      "hp": 35,
+      "moveSpeed": 90,
+      "damage": 12,
+      "expReward": 14,
+      "fireRate": 2.0,
+      "bulletSpeed": 240,
+      "detectionRange": 700,
+      "attackRange": 300
+    },
+    {
+      "id": "tank_1",
+      "type": "tank",
+      "hp": 150,
+      "moveSpeed": 50,
+      "damage": 20,
+      "expReward": 15,
+      "attackRange": 50
+    },
+    {
+      "id": "tank_2",
+      "type": "tank",
+      "hp": 300,
+      "moveSpeed": 55,
+      "damage": 30,
+      "expReward": 25,
+      "attackRange": 60
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "d61075d7-076f-4ea1-b575-4e12f3395923",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isBundle": true,
+    "bundleName": "audio",
+    "priority": 1,
+    "compressionType": {},
+    "isRemoteBundle": {}
+  }
+}

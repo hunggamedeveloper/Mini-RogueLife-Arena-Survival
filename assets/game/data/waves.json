@@ -1,0 +1,58 @@
+{
+  "waves": [
+    {
+      "waveId": 1,
+      "triggerTime": 0,
+      "spawnEvents": [
+        { "time": 0, "enemyType": "melee", "count": 5, "spawnRadius": 600 }
+      ]
+    },
+    {
+      "waveId": 2,
+      "triggerTime": 20,
+      "spawnEvents": [
+        { "time": 0, "enemyType": "melee",  "count": 8,  "spawnRadius": 600 },
+        { "time": 4, "enemyType": "ranged", "count": 3,  "spawnRadius": 700 }
+      ]
+    },
+    {
+      "waveId": 3,
+      "triggerTime": 45,
+      "spawnEvents": [
+        { "time": 0, "enemyType": "melee",  "count": 10, "spawnRadius": 600 },
+        { "time": 3, "enemyType": "ranged", "count": 5,  "spawnRadius": 700 },
+        { "time": 6, "enemyType": "tank",   "count": 1,  "spawnRadius": 500 }
+      ]
+    },
+    {
+      "waveId": 4,
+      "triggerTime": 80,
+      "spawnEvents": [
+        { "time": 0, "enemyType": "melee",  "count": 15, "spawnRadius": 600 },
+        { "time": 2, "enemyType": "ranged", "count": 8,  "spawnRadius": 700 },
+        { "time": 5, "enemyType": "tank",   "count": 2,  "spawnRadius": 500 }
+      ]
+    },
+    {
+      "waveId": 5,
+      "triggerTime": 120,
+      "spawnEvents": [
+        { "time": 0,  "enemyType": "melee",  "count": 20, "spawnRadius": 600 },
+        { "time": 2,  "enemyType": "ranged", "count": 10, "spawnRadius": 700 },
+        { "time": 4,  "enemyType": "tank",   "count": 3,  "spawnRadius": 500 },
+        { "time": 10, "enemyType": "melee",  "count": 15, "spawnRadius": 600 }
+      ]
+    },
+    {
+      "waveId": 6,
+      "triggerTime": 180,
+      "spawnEvents": [
+        { "time": 0,  "enemyType": "melee",  "count": 25, "spawnRadius": 600 },
+        { "time": 1,  "enemyType": "ranged", "count": 15, "spawnRadius": 700 },
+        { "time": 3,  "enemyType": "tank",   "count": 5,  "spawnRadius": 500 },
+        { "time": 8,  "enemyType": "melee",  "count": 20, "spawnRadius": 600 },
+        { "time": 12, "enemyType": "ranged", "count": 10, "spawnRadius": 700 }
+      ]
+    }
+  ]
+}

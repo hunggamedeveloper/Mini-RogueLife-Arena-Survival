@@ -1,0 +1,15 @@
+{
+  "ver": "1.2.0",
+  "importer": "directory",
+  "imported": true,
+  "uuid": "0090fc9d-18ac-45ff-8431-75224bb6dd54",
+  "files": [],
+  "subMetas": {},
+  "userData": {
+    "isBundle": true,
+    "bundleName": "gameplay",
+    "priority": 2,
+    "compressionType": {},
+    "isRemoteBundle": {}
+  }
+}

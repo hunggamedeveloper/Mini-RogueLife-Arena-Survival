@@ -1,0 +1,114 @@
+{
+  "upgrades": [
+    {
+      "id": "dmg_add_1",
+      "stat": "damage",
+      "label": "+Damage I",
+      "description": "Tăng sát thương đạn +5",
+      "value": 5,
+      "applyMode": "add",
+      "weight": 10,
+      "maxStacks": 5,
+      "iconKey": "icon_damage"
+    },
+    {
+      "id": "dmg_mul_1",
+      "stat": "damage",
+      "label": "+Damage II",
+      "description": "Tăng sát thương đạn ×1.3",
+      "value": 1.3,
+      "applyMode": "multiply",
+      "weight": 5,
+      "maxStacks": 3,
+      "iconKey": "icon_damage"
+    },
+    {
+      "id": "firerate_mul_1",
+      "stat": "fireRate",
+      "label": "+Tốc bắn I",
+      "description": "Tốc độ bắn +20%",
+      "value": 1.2,
+      "applyMode": "multiply",
+      "weight": 10,
+      "maxStacks": 4,
+      "iconKey": "icon_firerate"
+    },
+    {
+      "id": "firerate_mul_2",
+      "stat": "fireRate",
+      "label": "+Tốc bắn II",
+      "description": "Tốc độ bắn +40%",
+      "value": 1.4,
+      "applyMode": "multiply",
+      "weight": 4,
+      "maxStacks": 2,
+      "iconKey": "icon_firerate"
+    },
+    {
+      "id": "proj_add_1",
+      "stat": "projectileCount",
+      "label": "+Multishot",
+      "description": "Bắn thêm 1 đạn mỗi lần",
+      "value": 1,
+      "applyMode": "add",
+      "weight": 6,
+      "maxStacks": 3,
+      "iconKey": "icon_multishot"
+    },
+    {
+      "id": "speed_mul_1",
+      "stat": "moveSpeed",
+      "label": "+Tốc độ I",
+      "description": "Tốc độ di chuyển +15%",
+      "value": 1.15,
+      "applyMode": "multiply",
+      "weight": 8,
+      "maxStacks": 4,
+      "iconKey": "icon_speed"
+    },
+    {
+      "id": "speed_add_1",
+      "stat": "moveSpeed",
+      "label": "+Tốc độ II",
+      "description": "Tốc độ di chuyển +30",
+      "value": 30,
+      "applyMode": "add",
+      "weight": 6,
+      "maxStacks": 5,
+      "iconKey": "icon_speed"
+    },
+    {
+      "id": "hp_add_1",
+      "stat": "hpMax",
+      "label": "+HP I",
+      "description": "HP tối đa +20",
+      "value": 20,
+      "applyMode": "add",
+      "weight": 9,
+      "maxStacks": 5,
+      "iconKey": "icon_hp"
+    },
+    {
+      "id": "hp_add_2",
+      "stat": "hpMax",
+      "label": "+HP II",
+      "description": "HP tối đa +50",
+      "value": 50,
+      "applyMode": "add",
+      "weight": 5,
+      "maxStacks": 3,
+      "iconKey": "icon_hp"
+    },
+    {
+      "id": "exp_mul_1",
+      "stat": "expGain",
+      "label": "+EXP Gain",
+      "description": "Nhận EXP +25%",
+      "value": 1.25,
+      "applyMode": "multiply",
+      "weight": 7,
+      "maxStacks": 3,
+      "iconKey": "icon_exp"
+    }
+  ]
+}
