@@ -3,15 +3,13 @@
 // Toggle with backtick (`) in editor builds.
 // ============================================================
 
-import { _decorator, Component, Label, KeyCode, input, Input, EventKeyboard } from 'cc';
+import { _decorator, Component, Label, KeyCode, input, Input, EventKeyboard, Node } from 'cc';
 import { PoolManager } from '../pool/PoolManager';
-import { EventBus } from '../core/EventBus';
-import { GameEvents, IDebugData } from '../../../shared/scripts/types/EventTypes';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
+import { GameEvents } from '../../../shared/scripts/types/EventTypes';
+import { IDebugData } from '../../../shared/scripts/types/GameTypes';
 import { GameManager } from '../core/GameManager';
 import { EnemySpawner } from '../enemy/EnemySpawner';
-
-// Re-export IDebugData location for reference
-import type { IDebugData as _IDebugData } from '../../../shared/scripts/types/GameTypes';
 
 const { ccclass, property } = _decorator;
 
@@ -20,6 +18,7 @@ const UPDATE_INTERVAL = 0.25; // seconds between stat refresh
 @ccclass('DebugOverlay')
 export class DebugOverlay extends Component {
 
+    @property(Node)        content:      Node         = null!;
     @property(Label)       fpsLabel:     Label        = null!;
     @property(Label)       enemyLabel:   Label        = null!;
     @property(Label)       bulletLabel:  Label        = null!;
@@ -34,7 +33,7 @@ export class DebugOverlay extends Component {
     onLoad(): void {
         input.on(Input.EventType.KEY_DOWN, this._onKey, this);
         // Default: hidden in release, shown in debug
-        this.node.active = true; // flip to false before release build
+        this.content.active = true; // flip to false before release build
     }
 
     onDestroy(): void {
@@ -42,7 +41,7 @@ export class DebugOverlay extends Component {
     }
 
     update(dt: number): void {
-        if (!this.node.active) return;
+        if (!this.content.active) return;
 
         // FPS tracking
         this._frameCount++;
@@ -73,7 +72,7 @@ export class DebugOverlay extends Component {
         }
 
         // Broadcast for external tools
-        EventBus.emit<_IDebugData>(GameEvents.DEBUG_UPDATE, {
+        EventBus.emit<IDebugData>(GameEvents.DEBUG_UPDATE, {
             fps:         this._lastFPS,
             enemyCount,
             bulletCount: bulletActive,
@@ -83,7 +82,7 @@ export class DebugOverlay extends Component {
 
     private _onKey(evt: EventKeyboard): void {
         if (evt.keyCode === KeyCode.BACKQUOTE) {
-            this.node.active = !this.node.active;
+            this.content.active = !this.content.active;
         }
     }
 }
