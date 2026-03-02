@@ -25,8 +25,6 @@ export class GameplayHUD extends Component {
 
     private _hpMax:      number = 100;
     private _expRequired:number = 20;
-    private _waveTimer:  number = 0;
-    private _waveMsgDur: number = 2;
 
     onLoad(): void {
         EventBus.on<{ amount: number; hpRemaining: number }>(
@@ -57,9 +55,7 @@ export class GameplayHUD extends Component {
 
         EventBus.on<{ waveId: number }>(GameEvents.WAVE_STARTED, ({ waveId }) => {
             if (this.waveLabel) {
-                this.waveLabel.string  = `Wave ${waveId}`;
-                this.waveLabel.node.active = true;
-                this._waveTimer = this._waveMsgDur;
+                this.waveLabel.string = `Wave ${waveId}`;
             }
         });
 
@@ -83,7 +79,7 @@ export class GameplayHUD extends Component {
         }
     }
 
-    update(dt: number): void {
+    update(_dt: number): void {
         // Timer
         const gm = GameManager.instance;
         if (gm) {
@@ -94,13 +90,6 @@ export class GameplayHUD extends Component {
             if (this.killsLabel) this.killsLabel.string = `${gm.killCount}`;
         }
 
-        // Wave label fade
-        if (this._waveTimer > 0) {
-            this._waveTimer -= dt;
-            if (this._waveTimer <= 0 && this.waveLabel) {
-                this.waveLabel.node.active = false;
-            }
-        }
     }
 
     private _updateHP(hpRemaining: number): void {
@@ -116,7 +105,7 @@ export class GameplayHUD extends Component {
         if (this.timerLabel) this.timerLabel.string   = '0:00';
         if (this.killsLabel) this.killsLabel.string   = '0';
         if (this.levelLabel) this.levelLabel.string   = 'Lv.1';
-        if (this.waveLabel)  this.waveLabel.node.active = false;
+        if (this.waveLabel)  this.waveLabel.string = 'Wave 1';
     }
 
     setHpMax(max: number): void {

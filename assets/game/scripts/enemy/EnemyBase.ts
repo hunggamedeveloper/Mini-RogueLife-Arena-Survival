@@ -100,19 +100,19 @@ export class EnemyBase extends Component implements IPoolable {
         }
     }
 
-    /** Returns true if this node overlaps a bullet (simple AABB, radius-based) */
+    /** AABB overlap — bullet treated as point vs enemy rect */
     checkBulletCollision(bullets: Projectile[]): void {
         const myPos = this.node.worldPosition;
-        const radius = 25; // enemy hit radius px
+        const hw = this._def?.hitHalfW ?? 40;
+        const hh = this._def?.hitHalfH ?? 22;
 
         for (const b of bullets) {
             if (!b.isValid || !b.node.active || !b.isPlayerOwned) continue;
-            const bp  = b.node.worldPosition;
-            const dx  = bp.x - myPos.x;
-            const dy  = bp.y - myPos.y;
-            const distSq = dx * dx + dy * dy;
-            if (distSq < radius * radius) {
-                const destroyed = b.registerHit();
+            const bp = b.node.worldPosition;
+            const dx = bp.x - myPos.x;
+            const dy = bp.y - myPos.y;
+            if (dx > -hw && dx < hw && dy > -hh && dy < hh) {
+                b.registerHit();
                 this.takeDamage(b.damage);
                 if (!this.node.active) break;
             }

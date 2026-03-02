@@ -91,11 +91,13 @@ export class GameManager extends Component {
     private _registerStates(): void {
         this._sm.register({
             name: GameState.Gameplay,
-            onEnter: (_prev) => {
+            onEnter: (prev) => {
                 this._setPlaying(true);
-                this._elapsedTime = 0;
-                this._killCount = 0;
-                EventBus.emit(GameEvents.GAME_START);
+                if (prev !== GameState.Pause) {
+                    this._elapsedTime = 0;
+                    this._killCount = 0;
+                    EventBus.emit(GameEvents.GAME_START);
+                }
             },
             onExit: (_next) => {
                 this._setPlaying(false);
@@ -108,10 +110,10 @@ export class GameManager extends Component {
         this._sm.register({
             name: GameState.Pause,
             onEnter: (_prev) => {
-                EventBus.emit(GameEvents.GAME_PAUSE);
+                // GAME_PAUSE already emitted by caller; no re-emit to avoid loop
             },
             onExit: (_next) => {
-                EventBus.emit(GameEvents.GAME_RESUME);
+                // GAME_RESUME already emitted by caller; no re-emit to avoid loop
             },
             onUpdate: (_dt) => {},
         });
@@ -198,8 +200,9 @@ export class GameManager extends Component {
         if (!this._playerStats) return;
 
         const plPos = playerNode.worldPosition;
-        const hitRadius = 30; // player hit radius px
-        const hitRadiusSq = hitRadius * hitRadius;
+        // Player AABB: visual 50x50, hitbox slightly smaller for fairness
+        const plHW = 22;
+        const plHH = 22;
 
         this._enemyBulletCache.length = 0;
         for (const node of enemyBulletNodes) {
@@ -213,7 +216,7 @@ export class GameManager extends Component {
             const bp = b.node.worldPosition;
             const dx = bp.x - plPos.x;
             const dy = bp.y - plPos.y;
-            if (dx * dx + dy * dy < hitRadiusSq) {
+            if (dx > -plHW && dx < plHW && dy > -plHH && dy < plHH) {
                 b.registerHit();
                 this._playerStats.takeDamage(b.damage);
             }

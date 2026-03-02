@@ -64,6 +64,8 @@ export interface IEnemyDef {
     bulletSpeed?: number;       // Ranged only
     detectionRange?: number;
     attackRange: number;
+    hitHalfW?: number;          // AABB half-width px, default 40
+    hitHalfH?: number;          // AABB half-height px, default 22
 }
 
 // ---- Projectile ----

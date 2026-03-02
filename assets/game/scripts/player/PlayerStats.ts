@@ -8,6 +8,7 @@ import { _decorator, Component } from 'cc';
 import { UpgradeStat, IUpgradeDef } from '../../../shared/scripts/types/GameTypes';
 import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
+import { PoolManager } from '../pool/PoolManager';
 
 const { ccclass, property } = _decorator;
 
@@ -85,6 +86,12 @@ export class PlayerStats extends Component {
     takeDamage(amount: number): void {
         this.hpCurrent = Math.max(0, this.hpCurrent - amount);
         EventBus.emit(GameEvents.PLAYER_DAMAGED, { amount, hpRemaining: this.hpCurrent });
+
+        // Spawn hit VFX at player position
+        const pos = this.node.worldPosition;
+        const vfx = PoolManager.instance?.get<Component>('hitEffect', this.node.parent!);
+        if (vfx) vfx.node.setWorldPosition(pos);
+        EventBus.emit(GameEvents.AUDIO_PLAY_SFX, { key: 'player_hit' });
 
         if (this.hpCurrent <= 0) {
             EventBus.emit(GameEvents.PLAYER_DIED, { level: this.level });

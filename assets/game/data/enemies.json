@@ -7,7 +7,9 @@
       "moveSpeed": 120,
       "damage": 10,
       "expReward": 5,
-      "attackRange": 40
+      "attackRange": 40,
+      "hitHalfW": 45,
+      "hitHalfH": 22
     },
     {
       "id": "melee_2",
@@ -16,7 +18,9 @@
       "moveSpeed": 150,
       "damage": 15,
       "expReward": 10,
-      "attackRange": 40
+      "attackRange": 40,
+      "hitHalfW": 45,
+      "hitHalfH": 22
     },
     {
       "id": "ranged_1",
@@ -28,7 +32,9 @@
       "fireRate": 1.5,
       "bulletSpeed": 200,
       "detectionRange": 600,
-      "attackRange": 250
+      "attackRange": 250,
+      "hitHalfW": 42,
+      "hitHalfH": 22
     },
     {
       "id": "ranged_2",
@@ -40,7 +46,9 @@
       "fireRate": 2.0,
       "bulletSpeed": 240,
       "detectionRange": 700,
-      "attackRange": 300
+      "attackRange": 300,
+      "hitHalfW": 42,
+      "hitHalfH": 22
     },
     {
       "id": "tank_1",
@@ -49,7 +57,9 @@
       "moveSpeed": 50,
       "damage": 20,
       "expReward": 15,
-      "attackRange": 50
+      "attackRange": 50,
+      "hitHalfW": 48,
+      "hitHalfH": 24
     },
     {
       "id": "tank_2",
@@ -58,7 +68,9 @@
       "moveSpeed": 55,
       "damage": 30,
       "expReward": 25,
-      "attackRange": 60
+      "attackRange": 60,
+      "hitHalfW": 48,
+      "hitHalfH": 24
     }
   ]
 }

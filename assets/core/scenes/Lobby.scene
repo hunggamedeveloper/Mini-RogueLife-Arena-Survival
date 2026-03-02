@@ -2506,7 +2506,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "LabelMaster",
+    "_name": "LabelTitle",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -2638,7 +2638,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "LabelTitle",
+    "_name": "LabelMaster",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
@@ -4110,7 +4110,7 @@
       "__id__": 93
     },
     "masterLabel": {
-      "__id__": 59
+      "__id__": 62
     },
     "sfxLabel": {
       "__id__": 73
