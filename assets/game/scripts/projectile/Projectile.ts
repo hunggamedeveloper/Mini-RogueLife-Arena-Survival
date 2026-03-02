@@ -7,7 +7,7 @@
 import { _decorator, Component, Vec3 } from 'cc';
 import { IPoolable, IProjectileData } from '../../../shared/scripts/types/GameTypes';
 import { PoolManager } from '../pool/PoolManager';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 
 const { ccclass } = _decorator;
@@ -52,6 +52,7 @@ export class Projectile extends Component implements IPoolable {
     // ---- Lifecycle ----
 
     update(dt: number): void {
+        if (!EventBus.playing) return;
         const dist = this._speed * dt;
         this._travelDist += dist;
 
@@ -69,6 +70,10 @@ export class Projectile extends Component implements IPoolable {
         const pos = this.node.worldPosition;
         EventBus.emit(GameEvents.BULLET_HIT, { posX: pos.x, posY: pos.y });
         EventBus.emit(GameEvents.AUDIO_PLAY_SFX, { key: 'hit' });
+
+        // Spawn hit VFX at impact point
+        const vfx = PoolManager.instance?.get<Component>('hitEffect', this.node.parent!);
+        if (vfx) vfx.node.setWorldPosition(pos.x, pos.y, pos.z);
 
         this._pierceCount++;
         if (this._pierceCount > this._pierce) {
