@@ -32,11 +32,18 @@ export class WaveManager extends Component {
     private _continuousTimer: number = 0;
     private _continuousInterval: number = 5;
 
+    private _onGameStart!: () => void;
+
     onLoad(): void {
         this._loadEnemyDefs();
         this._loadWaves();
 
-        EventBus.on(GameEvents.GAME_START, () => this._reset());
+        this._onGameStart = () => this._reset();
+        EventBus.on(GameEvents.GAME_START, this._onGameStart);
+    }
+
+    onDestroy(): void {
+        EventBus.off(GameEvents.GAME_START, this._onGameStart);
     }
 
     update(dt: number): void {

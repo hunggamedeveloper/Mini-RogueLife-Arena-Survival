@@ -20,6 +20,10 @@ export class DeathEffect extends Component implements IPoolable {
         this._anim?.on(Animation.EventType.FINISHED, this._onAnimFinished, this);
     }
 
+    onDestroy(): void {
+        this._anim?.off(Animation.EventType.FINISHED, this._onAnimFinished, this);
+    }
+
     onGetFromPool(): void {
         this._anim?.play();
     }

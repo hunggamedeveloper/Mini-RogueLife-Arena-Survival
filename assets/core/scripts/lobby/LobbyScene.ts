@@ -21,13 +21,21 @@ export class LobbyScene extends Component {
         SaveService.load();
         this._updateBestScores();
 
-        this.playBtn?.node.on(Button.EventType.CLICK, () => {
-            director.loadScene('Gameplay');
-        }, this);
+        this.playBtn?.node.on(Button.EventType.CLICK, this._onClickPlay, this);
+        this.settingsBtn?.node.on(Button.EventType.CLICK, this._onClickSettings, this);
+    }
 
-        this.settingsBtn?.node.on(Button.EventType.CLICK, () => {
-            EventBus.emit(GameEvents.UI_SETTINGS_OPEN);
-        }, this);
+    onDestroy(): void {
+        this.playBtn?.node?.off(Button.EventType.CLICK, this._onClickPlay, this);
+        this.settingsBtn?.node?.off(Button.EventType.CLICK, this._onClickSettings, this);
+    }
+
+    private _onClickPlay(): void {
+        director.loadScene('Gameplay');
+    }
+
+    private _onClickSettings(): void {
+        EventBus.emit(GameEvents.UI_SETTINGS_OPEN);
     }
 
     private _updateBestScores(): void {

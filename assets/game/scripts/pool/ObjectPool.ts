@@ -62,8 +62,15 @@ export class ObjectPool<T extends Component & IPoolable> {
     get activeNodes(): ReadonlySet<Node> { return this._activeSet; }
 
     clear(): void {
-        this._pool.clear();
         this._activeSet.clear();
+        // Drain manually instead of _pool.clear() to avoid double-destroy
+        // during scene teardown (Cocos already destroys child nodes)
+        while (this._pool.size() > 0) {
+            const node = this._pool.get();
+            if (node?.isValid) {
+                node.destroy();
+            }
+        }
     }
 
     private _createNode(): Node {

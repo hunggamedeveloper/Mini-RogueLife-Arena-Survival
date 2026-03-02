@@ -23,19 +23,30 @@ export class ResultPanel extends Component {
     @property(Button) retryBtn:       Button = null!;
     @property(Button) lobbyBtn:       Button = null!;
 
+    private _onResultOpen!: (result: IGameResult) => void;
+
     onLoad(): void {
-        EventBus.on<IGameResult>(GameEvents.UI_RESULT_OPEN, (result) => this._show(result));
+        this._onResultOpen = (result) => this._show(result);
+        EventBus.on(GameEvents.UI_RESULT_OPEN, this._onResultOpen);
 
-        this.retryBtn?.node.on(Button.EventType.CLICK, () => {
-            // Reload gameplay scene
-            director.loadScene('Gameplay');
-        }, this);
-
-        this.lobbyBtn?.node.on(Button.EventType.CLICK, () => {
-            GameManager.instance?.goToLobby();
-        }, this);
+        this.retryBtn?.node.on(Button.EventType.CLICK, this._onClickRetry, this);
+        this.lobbyBtn?.node.on(Button.EventType.CLICK, this._onClickLobby, this);
 
         this.content.active = false;
+    }
+
+    onDestroy(): void {
+        EventBus.off(GameEvents.UI_RESULT_OPEN, this._onResultOpen);
+        this.retryBtn?.node?.off(Button.EventType.CLICK, this._onClickRetry, this);
+        this.lobbyBtn?.node?.off(Button.EventType.CLICK, this._onClickLobby, this);
+    }
+
+    private _onClickRetry(): void {
+        director.loadScene('Gameplay');
+    }
+
+    private _onClickLobby(): void {
+        GameManager.instance?.goToLobby();
     }
 
     private _show(result: IGameResult): void {

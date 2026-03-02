@@ -30,14 +30,15 @@ export class EnemySpawner extends Component {
 
     get activeEnemies(): ReadonlyArray<EnemyBase> { return this._activeEnemies; }
 
+    private _onEnemyDied!: () => void;
+
     onLoad(): void {
-        EventBus.on<{ type: EnemyType }>(GameEvents.ENEMY_SPAWNED, () => {});
-        EventBus.on<{ type: EnemyType }>(GameEvents.ENEMY_DIED, ({ type }) => {
-            this._pruneInactive();
-        });
+        this._onEnemyDied = () => this._pruneInactive();
+        EventBus.on(GameEvents.ENEMY_DIED, this._onEnemyDied);
     }
 
     onDestroy(): void {
+        EventBus.off(GameEvents.ENEMY_DIED, this._onEnemyDied);
         this._activeEnemies.length = 0;
     }
 

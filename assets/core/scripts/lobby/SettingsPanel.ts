@@ -21,19 +21,34 @@ export class SettingsPanel extends Component {
     @property(Label)  bgmLabel:     Label  = null!;
     @property(Button) closeBtn:     Button = null!;
 
+    private _onSettingsOpen!:  () => void;
+    private _onSettingsClose!: () => void;
+
     onLoad(): void {
-        EventBus.on(GameEvents.UI_SETTINGS_OPEN,  () => this._open());
-        EventBus.on(GameEvents.UI_SETTINGS_CLOSE, () => this.content.active = false);
+        this._onSettingsOpen  = () => this._open();
+        this._onSettingsClose = () => this.content.active = false;
+        EventBus.on(GameEvents.UI_SETTINGS_OPEN,  this._onSettingsOpen);
+        EventBus.on(GameEvents.UI_SETTINGS_CLOSE, this._onSettingsClose);
 
-        this.closeBtn?.node.on(Button.EventType.CLICK, () => {
-            EventBus.emit(GameEvents.UI_SETTINGS_CLOSE);
-        }, this);
-
-        this.masterSlider?.node.on('slide', () => this._onSliderChange(), this);
-        this.sfxSlider?.node.on('slide',    () => this._onSliderChange(), this);
-        this.bgmSlider?.node.on('slide',    () => this._onSliderChange(), this);
+        this.closeBtn?.node.on(Button.EventType.CLICK, this._onClickClose, this);
+        this.masterSlider?.node.on('slide', this._onSliderChange, this);
+        this.sfxSlider?.node.on('slide',    this._onSliderChange, this);
+        this.bgmSlider?.node.on('slide',    this._onSliderChange, this);
 
         this.content.active = false;
+    }
+
+    onDestroy(): void {
+        EventBus.off(GameEvents.UI_SETTINGS_OPEN,  this._onSettingsOpen);
+        EventBus.off(GameEvents.UI_SETTINGS_CLOSE, this._onSettingsClose);
+        this.closeBtn?.node?.off(Button.EventType.CLICK, this._onClickClose, this);
+        this.masterSlider?.node?.off('slide', this._onSliderChange, this);
+        this.sfxSlider?.node?.off('slide',    this._onSliderChange, this);
+        this.bgmSlider?.node?.off('slide',    this._onSliderChange, this);
+    }
+
+    private _onClickClose(): void {
+        EventBus.emit(GameEvents.UI_SETTINGS_CLOSE);
     }
 
     private _open(): void {
