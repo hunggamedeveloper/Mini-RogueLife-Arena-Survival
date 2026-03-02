@@ -12,7 +12,7 @@ Game Rogue-lite survival top-down, phong cách Vampire Survivors. Người chơi
 1. Mở Cocos Creator 3.8.2
 2. Chọn **Open Project** → chọn thư mục này
 3. Đợi editor import assets (lần đầu có thể mất 1-2 phút)
-4. Mở scene `assets/core/scenes/Boot.scene`
+4. Mở scene `assets/start/Start.scene`
 5. Nhấn **Play** (▶) để chạy trong Preview
 
 ## Cách build Web
@@ -21,8 +21,8 @@ Game Rogue-lite survival top-down, phong cách Vampire Survivors. Người chơi
 
 1. Trong editor: **Project → Build**
 2. Platform: **Web Mobile** (hoặc Web Desktop)
-3. Start Scene: `Boot`
-4. Thêm tất cả scenes vào build: `Boot`, `Lobby`, `Gameplay`
+3. Start Scene: `Start`
+4. Thêm tất cả scenes vào build: `Start`, `Boot`, `Lobby`, `Gameplay`
 5. Nhấn **Build** → **Run**
 6. Mở browser tại `http://localhost:7456` (hoặc port hiển thị)
 
@@ -61,6 +61,7 @@ build/
 
 ```
 assets/
+├── start/         [Main bundle]        Start scene — load bundles, entry point
 ├── core/          [Bundle: "core"]     Boot + Lobby + Gameplay scenes, Settings UI
 ├── game/          [Bundle: "gameplay"] Gameplay scripts + prefabs + data
 ├── audio/         [Bundle: "audio"]    BGM + SFX
@@ -69,7 +70,7 @@ assets/
 
 ### State Machine
 ```
-Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
+Start → Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
 ```
 
 ### Luồng giao tiếp
@@ -114,7 +115,8 @@ Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
 - **Upgrade panel pause riêng**: `UI_UPGRADE_PANEL_OPEN/CLOSE` tạm dừng gameplay time mà không cần transition sang Pause state.
 
 ### Asset Loading
-- **Boot scene preload** cả `core` và `gameplay` bundle trước khi vào Lobby → vào gameplay không bị đơ.
+- **Start scene** (ngoài bundle) là entry point — load `core` + `gameplay` bundle → chuyển vào Boot scene. Giải quyết limitation "scene trong bundle không thể set làm Start Scene".
+- **Boot scene** init services (SaveService) → chuyển vào Lobby.
 - **Audio bundle** lazy load riêng, không block gameplay bundle.
 
 ## Nếu có thêm thời gian
@@ -134,6 +136,10 @@ Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
 
 ```
 assets/
+├── start/                   [Main bundle — Build Start Scene]
+│   ├── Start.scene
+│   └── scripts/Start.ts         ← Load core+gameplay bundles → Boot
+│
 ├── core/                    [Bundle: core]
 │   ├── scenes/Boot.scene, Lobby.scene, Gameplay.scene
 │   └── scripts/boot/BootScene.ts, lobby/LobbyScene.ts, SettingsPanel.ts
