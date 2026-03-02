@@ -6,8 +6,7 @@
 
 import { _decorator, Component, Vec2, Vec3, input, Input, KeyCode, EventKeyboard } from 'cc';
 import { PlayerStats } from './PlayerStats';
-import { GameState } from '../../../shared/scripts/types/GameTypes';
-import { GameManager } from '../core/GameManager';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 
 const { ccclass, property } = _decorator;
 
@@ -34,8 +33,7 @@ export class PlayerController extends Component {
     }
 
     update(dt: number): void {
-        const gm = GameManager.instance;
-        if (gm && gm.stateMachine.currentState !== GameState.Gameplay) return;
+        if (!EventBus.playing) return;
 
         this._computeKeyDir();
 

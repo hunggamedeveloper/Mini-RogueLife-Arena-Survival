@@ -8,9 +8,9 @@ import { _decorator, Component, Vec2, Vec3 } from 'cc';
 import { PlayerStats } from './PlayerStats';
 import { PlayerController } from './PlayerController';
 import { PoolManager } from '../pool/PoolManager';
-import { GameState, IProjectileData } from '../../../shared/scripts/types/GameTypes';
+import { IProjectileData } from '../../../shared/scripts/types/GameTypes';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { EnemyBase } from '../enemy/EnemyBase';
 
@@ -28,8 +28,7 @@ export class AutoShooter extends Component {
     private _cooldown: number = 0;
 
     update(dt: number): void {
-        const gm = GameManager.instance;
-        if (gm && gm.stateMachine.currentState !== GameState.Gameplay) return;
+        if (!EventBus.playing) return;
 
         this._cooldown -= dt;
         if (this._cooldown > 0) return;
@@ -65,9 +64,10 @@ export class AutoShooter extends Component {
                 pierce:        0,
             };
 
+            const parent = this.bulletParent ?? this.node.parent!;
             const proj = PoolManager.instance?.get<import('../projectile/Projectile').Projectile>(
                 'bulletPlayer',
-                this.bulletParent,
+                parent,
             );
             if (proj) {
                 proj.node.setWorldPosition(this.node.worldPosition);

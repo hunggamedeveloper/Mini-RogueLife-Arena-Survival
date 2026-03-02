@@ -6,7 +6,7 @@
 
 import { _decorator, Component } from 'cc';
 import { UpgradeStat, IUpgradeDef } from '../../../shared/scripts/types/GameTypes';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 
 const { ccclass, property } = _decorator;
@@ -87,7 +87,7 @@ export class PlayerStats extends Component {
         EventBus.emit(GameEvents.PLAYER_DAMAGED, { amount, hpRemaining: this.hpCurrent });
 
         if (this.hpCurrent <= 0) {
-            EventBus.emit(GameEvents.PLAYER_DIED);
+            EventBus.emit(GameEvents.PLAYER_DIED, { level: this.level });
         }
     }
 
