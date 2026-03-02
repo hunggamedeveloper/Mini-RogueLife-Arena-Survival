@@ -2,9 +2,9 @@
 // SettingsPanel.ts — Volume sliders + close.
 // ============================================================
 
-import { _decorator, Component, Button, Slider, Label } from 'cc';
+import { _decorator, Component, Button, Slider, Label, Node } from 'cc';
 import { SaveService } from '../../../shared/scripts/services/SaveService';
-import { EventBus } from '../../../game/scripts/core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 
 const { ccclass, property } = _decorator;
@@ -12,6 +12,7 @@ const { ccclass, property } = _decorator;
 @ccclass('SettingsPanel')
 export class SettingsPanel extends Component {
 
+    @property(Node)   content:      Node   = null!;
     @property(Slider) masterSlider: Slider = null!;
     @property(Slider) sfxSlider:    Slider = null!;
     @property(Slider) bgmSlider:    Slider = null!;
@@ -22,7 +23,7 @@ export class SettingsPanel extends Component {
 
     onLoad(): void {
         EventBus.on(GameEvents.UI_SETTINGS_OPEN,  () => this._open());
-        EventBus.on(GameEvents.UI_SETTINGS_CLOSE, () => this.node.active = false);
+        EventBus.on(GameEvents.UI_SETTINGS_CLOSE, () => this.content.active = false);
 
         this.closeBtn?.node.on(Button.EventType.CLICK, () => {
             EventBus.emit(GameEvents.UI_SETTINGS_CLOSE);
@@ -32,7 +33,7 @@ export class SettingsPanel extends Component {
         this.sfxSlider?.node.on('slide',    () => this._onSliderChange(), this);
         this.bgmSlider?.node.on('slide',    () => this._onSliderChange(), this);
 
-        this.node.active = false;
+        this.content.active = false;
     }
 
     private _open(): void {
@@ -41,7 +42,7 @@ export class SettingsPanel extends Component {
         if (this.sfxSlider)    this.sfxSlider.progress    = d.volumeSFX;
         if (this.bgmSlider)    this.bgmSlider.progress    = d.volumeBGM;
         this._updateLabels(d.volumeMaster, d.volumeSFX, d.volumeBGM);
-        this.node.active = true;
+        this.content.active = true;
     }
 
     private _onSliderChange(): void {
