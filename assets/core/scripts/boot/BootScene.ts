@@ -1,9 +1,9 @@
 // ============================================================
-// BootScene.ts — Entry point. Loads "core" bundle then transitions
-// to Lobby scene. Shows loading progress.
+// BootScene.ts — Initializes game services and transitions
+// to Lobby. Bundles are already loaded by Start scene.
 // ============================================================
 
-import { _decorator, Component, Label, ProgressBar, assetManager, director } from 'cc';
+import { _decorator, Component, Label, ProgressBar, director } from 'cc';
 import { SaveService } from '../../../shared/scripts/services/SaveService';
 
 const { ccclass, property } = _decorator;
@@ -16,33 +16,10 @@ export class BootScene extends Component {
 
     onLoad(): void {
         SaveService.load();
-        this._loadBundles();
-    }
 
-    private _loadBundles(): void {
-        let loaded = 0;
-        const total = 2;
+        if (this.progressBar)   this.progressBar.progress = 1;
+        if (this.progressLabel) this.progressLabel.string  = '100%';
 
-        const advance = () => {
-            loaded++;
-            const progress = loaded / total;
-            if (this.progressBar)   this.progressBar.progress   = progress;
-            if (this.progressLabel) this.progressLabel.string = `${Math.round(progress * 100)}%`;
-            if (loaded >= total) {
-                this.scheduleOnce(() => director.loadScene('Lobby'), 0.3);
-            }
-        };
-
-        // Load "core" bundle (scenes + UI)
-        assetManager.loadBundle('core', (err) => {
-            if (err) { console.error('[Boot] Failed to load core bundle', err); return; }
-            advance();
-        });
-
-        // Pre-load "gameplay" bundle in background
-        assetManager.loadBundle('gameplay', (err) => {
-            if (err) { console.error('[Boot] Failed to load gameplay bundle', err); return; }
-            advance();
-        });
+        this.scheduleOnce(() => director.loadScene('Lobby'), 0.3);
     }
 }

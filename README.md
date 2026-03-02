@@ -17,10 +17,38 @@ Game Rogue-lite survival top-down, phong cách Vampire Survivors. Người chơi
 
 ## Cách build Web
 
+### Cách 1: Qua Editor UI
+
 1. Trong editor: **Project → Build**
 2. Platform: **Web Mobile** (hoặc Web Desktop)
 3. Start Scene: `Boot`
-4. Nhấn **Build** → **Run**
+4. Thêm tất cả scenes vào build: `Boot`, `Lobby`, `Gameplay`
+5. Nhấn **Build** → **Run**
+6. Mở browser tại `http://localhost:7456` (hoặc port hiển thị)
+
+### Cách 2: Qua CLI (không cần mở editor)
+
+```bash
+# Build Web Mobile
+/Applications/Cocos/Creator/3.8.2/CocosCreator.app/Contents/MacOS/CocosCreator \
+  --project /path/to/MiniRogueLifeArenaSurvival \
+  --build "platform=web-mobile;buildPath=build"
+
+# Kết quả build nằm trong: build/web-mobile/
+# Mở file index.html hoặc serve bằng http-server
+npx http-server build/web-mobile -p 8080
+```
+
+### Build output
+
+```
+build/
+└── web-mobile/
+    ├── index.html          ← Entry point
+    ├── application.js
+    ├── assets/             ← Bundled assets (core, gameplay, audio)
+    └── cocos-js/           ← Engine runtime
+```
 
 ## Cách build Android (bonus)
 
@@ -33,10 +61,10 @@ Game Rogue-lite survival top-down, phong cách Vampire Survivors. Người chơi
 
 ```
 assets/
-├── core/          [Bundle: "core"]     Boot + Lobby scenes, Settings UI
-├── game/          [Bundle: "gameplay"] Toàn bộ gameplay scripts + prefabs + data
+├── core/          [Bundle: "core"]     Boot + Lobby + Gameplay scenes, Settings UI
+├── game/          [Bundle: "gameplay"] Gameplay scripts + prefabs + data
 ├── audio/         [Bundle: "audio"]    BGM + SFX
-└── shared/        [Compile vào main]   Types, Services (không phải bundle)
+└── shared/        [Compile vào main]   EventBus, Types, Services (không phải bundle)
 ```
 
 ### State Machine
@@ -52,10 +80,10 @@ Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
 
 | Module | File | Mô tả |
 |---|---|---|
-| EventBus | `game/scripts/core/EventBus.ts` | Map<string, Set<Callback>>, singleton |
+| EventBus | `shared/scripts/core/EventBus.ts` | Map<string, Set<Callback>>, singleton + `playing` flag |
 | StateMachine | `game/scripts/core/StateMachine.ts` | IState interface, enter/exit/update |
-| GameManager | `game/scripts/core/GameManager.ts` | Root singleton, điều phối state |
-| ObjectPool | `game/scripts/pool/ObjectPool.ts` | Generic typed pool wrapper |
+| GameManager | `game/scripts/core/GameManager.ts` | Root singleton, state + collision loop |
+| ObjectPool | `game/scripts/pool/ObjectPool.ts` | Generic typed pool, componentName lookup |
 | PoolManager | `game/scripts/pool/PoolManager.ts` | Khởi tạo và quản lý tất cả pool |
 | PlayerStats | `game/scripts/player/PlayerStats.ts` | Stats container + `applyUpgrade()` |
 | PlayerController | `game/scripts/player/PlayerController.ts` | WASD + Virtual Joystick → Vec2 |
@@ -70,14 +98,20 @@ Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
 
 ### Performance
 - **Object Pooling** toàn bộ: bullet player/enemy (50 each), enemy melee (80), ranged (40), tank (20), VFX (30+20). Không bao giờ `Instantiate` trong gameplay.
-- **Không allocate trong update loop**: Pre-allocate `Vec3` cho movement, snapshot array khi iterate EventBus listeners.
+- **Collision loop tập trung**: `GameManager._checkCollisions()` xử lý toàn bộ bullet↔enemy và bullet↔player mỗi frame — dùng reusable cache arrays (`_bulletCache`, `_enemyBulletCache`) thay vì allocate mới.
+- **Không allocate trong update loop**: Pre-allocate `Vec3` cho movement, snapshot array khi iterate EventBus listeners, reuse collision arrays.
 - **Pool container node** tách khỏi active render tree → giảm batching overhead.
 - **EnemySpawner.\_pruneInactive()**: Dùng in-place swap thay vì `filter()` → không tạo array mới.
+- **ObjectPool.get()** lookup component bằng `componentName` (truyền lúc khởi tạo) thay vì `node.name`.
 
 ### Architecture
+- **EventBus ở shared/** (ngoài mọi bundle): `core/` và `game/` bundle đều import được — tránh circular bundle dependency.
+- **EventBus.playing flag**: Global pause control — tất cả gameplay components check `EventBus.playing` trước khi xử lý logic, đơn giản hóa pause/resume.
 - **EventBus dùng Set** thay vì Array → O(1) removal, tránh duplicate listeners.
+- **UI Panel visibility pattern**: Không dùng `this.node.active = false` trên script có `EventBus.on()`. Thay vào đó toggle `content` child node → tránh mất event listeners khi node bị disable.
 - **Data-driven hoàn toàn**: Thêm enemy type mới chỉ cần thêm entry JSON, không sửa code.
 - **Dependency injection qua Inspector**: GameManager giữ ref đến sub-managers qua @property, tránh `getComponent` trong update.
+- **Upgrade panel pause riêng**: `UI_UPGRADE_PANEL_OPEN/CLOSE` tạm dừng gameplay time mà không cần transition sang Pause state.
 
 ### Asset Loading
 - **Boot scene preload** cả `core` và `gameplay` bundle trước khi vào Lobby → vào gameplay không bị đơ.
@@ -85,7 +119,7 @@ Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
 
 ## Nếu có thêm thời gian
 
-- [ ] **Collision system chính xác hơn**: Dùng PhysicsSystem 2D của Cocos thay vì distance check thủ công — tránh bullet miss enemy nhỏ ở tốc độ cao.
+- [ ] **Collision system chính xác hơn**: Dùng PhysicsSystem 2D của Cocos thay vì AABB distance check thủ công — tránh bullet miss enemy nhỏ ở tốc độ cao.
 - [ ] **Enemy AI nâng cao**: Pathfinding A* đơn giản để enemy không bị kẹt tường; formation spawning (bao vây).
 - [ ] **Thêm upgrade types**: Shield (absorb X damage), Piercing bullets, Area explosion on kill, Magnet (auto-collect EXP orbs).
 - [ ] **EXP orb visual**: Spawn orb prefab tại vị trí enemy chết, player di chuyển lại để nhặt — gameplay loop hấp dẫn hơn.
@@ -101,13 +135,12 @@ Boot → Lobby → Gameplay ⇄ Pause → Result → Lobby
 ```
 assets/
 ├── core/                    [Bundle: core]
-│   ├── scenes/Boot.scene, Lobby.scene
+│   ├── scenes/Boot.scene, Lobby.scene, Gameplay.scene
 │   └── scripts/boot/BootScene.ts, lobby/LobbyScene.ts, SettingsPanel.ts
 │
 ├── game/                    [Bundle: gameplay]
-│   ├── scenes/Gameplay.scene
 │   ├── scripts/
-│   │   ├── core/GameManager.ts, StateMachine.ts, EventBus.ts
+│   │   ├── core/GameManager.ts, StateMachine.ts
 │   │   ├── player/PlayerController.ts, PlayerStats.ts, AutoShooter.ts
 │   │   ├── enemy/EnemyBase.ts, EnemyMelee.ts, EnemyRanged.ts, EnemyTank.ts, EnemySpawner.ts
 │   │   ├── projectile/Projectile.ts
@@ -117,14 +150,16 @@ assets/
 │   │   ├── ui/GameplayHUD.ts, PausePanel.ts, ResultPanel.ts, VirtualJoystick.ts
 │   │   ├── map/ArenaMap.ts
 │   │   └── debug/DebugOverlay.ts
+│   ├── prefabs/player/, enemy/, vfx/
 │   └── data/upgrades.json, enemies.json, waves.json
 │
 ├── audio/                   [Bundle: audio]
-│   ├── bgm/lobby_bgm.mp3, gameplay_bgm.mp3
-│   └── sfx/shoot.mp3, hit.mp3, enemy_death.mp3, player_hurt.mp3, level_up.mp3
+│   ├── bgm/
+│   └── sfx/
 │
 └── shared/                  [Compile vào main bundle]
     └── scripts/
+        ├── core/EventBus.ts
         ├── types/GameTypes.ts, EventTypes.ts
         └── services/AudioService.ts, SaveService.ts, AnalyticsService.ts
 ```
