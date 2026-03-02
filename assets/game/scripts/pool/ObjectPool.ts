@@ -4,7 +4,7 @@
 // while idle to reduce rendering overhead.
 // ============================================================
 
-import { Node, NodePool, Prefab, instantiate } from 'cc';
+import { Node, NodePool, Prefab, instantiate, Component } from 'cc';
 import { IPoolable } from '../../../shared/scripts/types/GameTypes';
 
 export class ObjectPool<T extends Component & IPoolable> {
@@ -13,11 +13,13 @@ export class ObjectPool<T extends Component & IPoolable> {
     private _container: Node;
     private _activeSet: Set<Node> = new Set();
     private _growSize: number;
+    private _componentName: string;
 
-    constructor(prefab: Prefab, container: Node, preWarmSize: number, growSize: number = 10) {
+    constructor(prefab: Prefab, container: Node, preWarmSize: number, growSize: number = 10, componentName?: string) {
         this._prefab = prefab;
         this._container = container;
         this._growSize = growSize;
+        this._componentName = componentName ?? prefab.name;
         this._pool = new NodePool();
 
         for (let i = 0; i < preWarmSize; i++) {
@@ -39,7 +41,7 @@ export class ObjectPool<T extends Component & IPoolable> {
         node.active = true;
 
         this._activeSet.add(node);
-        const comp = node.getComponent<T>(node.name) as T;
+        const comp = node.getComponent(this._componentName) as T;
         comp?.onGetFromPool();
         return comp;
     }
@@ -57,9 +59,10 @@ export class ObjectPool<T extends Component & IPoolable> {
 
     get activeCount(): number { return this._activeSet.size; }
     get freeCount(): number { return this._pool.size(); }
+    get activeNodes(): ReadonlySet<Node> { return this._activeSet; }
 
     clear(): void {
-        this._pool.clear(true);
+        this._pool.clear();
         this._activeSet.clear();
     }
 
@@ -71,5 +74,3 @@ export class ObjectPool<T extends Component & IPoolable> {
     }
 }
 
-// Avoid circular import — import Component separately
-import { Component } from 'cc';
