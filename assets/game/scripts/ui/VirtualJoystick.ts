@@ -3,8 +3,8 @@
 // Writes normalized Vec2 into PlayerController.joystickDir.
 // ============================================================
 
-import { _decorator, Component, Node, Vec2, Touch, EventTouch,
-         UITransform, input, Input, screen } from 'cc';
+import { _decorator, Component, Node, Vec2, v3, EventTouch,
+         UITransform, Input } from 'cc';
 import { PlayerController } from '../player/PlayerController';
 
 const { ccclass, property } = _decorator;
@@ -42,8 +42,9 @@ export class VirtualJoystick extends Component {
         this._touching = true;
         this._touchId  = touch.getID();
 
+        const uiLoc = touch.getUILocation();
         const uiPos = this.node.getComponent(UITransform)!
-            .convertToNodeSpaceAR(touch.getUILocation());
+            .convertToNodeSpaceAR(v3(uiLoc.x, uiLoc.y, 0));
         this._center.set(uiPos.x, uiPos.y);
         this._stickOffset.set(0, 0);
         if (this.stickNode) this.stickNode.setPosition(0, 0, 0);
@@ -55,8 +56,9 @@ export class VirtualJoystick extends Component {
         const touch = evt.touch!;
         if (touch.getID() !== this._touchId) return;
 
+        const uiLoc = touch.getUILocation();
         const uiPos = this.node.getComponent(UITransform)!
-            .convertToNodeSpaceAR(touch.getUILocation());
+            .convertToNodeSpaceAR(v3(uiLoc.x, uiLoc.y, 0));
 
         let dx = uiPos.x - this._center.x;
         let dy = uiPos.y - this._center.y;

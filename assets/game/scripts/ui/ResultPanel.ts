@@ -3,9 +3,9 @@
 // Shows survival time, kills, level, and new-best badges.
 // ============================================================
 
-import { _decorator, Component, Label, Button, Node } from 'cc';
+import { _decorator, Component, Label, Button, Node, director } from 'cc';
 import { IGameResult } from '../../../shared/scripts/types/GameTypes';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 import { GameManager } from '../core/GameManager';
 
@@ -14,6 +14,7 @@ const { ccclass, property } = _decorator;
 @ccclass('ResultPanel')
 export class ResultPanel extends Component {
 
+    @property(Node)   content:        Node   = null!;
     @property(Label)  timeLabel:      Label  = null!;
     @property(Label)  killsLabel:     Label  = null!;
     @property(Label)  levelLabel:     Label  = null!;
@@ -27,7 +28,6 @@ export class ResultPanel extends Component {
 
         this.retryBtn?.node.on(Button.EventType.CLICK, () => {
             // Reload gameplay scene
-            const { director } = require('cc');
             director.loadScene('Gameplay');
         }, this);
 
@@ -35,11 +35,11 @@ export class ResultPanel extends Component {
             GameManager.instance?.goToLobby();
         }, this);
 
-        this.node.active = false;
+        this.content.active = false;
     }
 
     private _show(result: IGameResult): void {
-        this.node.active = true;
+        this.content.active = true;
 
         const t = result.survivalTime;
         const m = Math.floor(t / 60);

@@ -2,8 +2,8 @@
 // PausePanel.ts — Pause overlay (resume / back to lobby).
 // ============================================================
 
-import { _decorator, Component, Button } from 'cc';
-import { EventBus } from '../core/EventBus';
+import { _decorator, Component, Button, Node } from 'cc';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 import { GameManager } from '../core/GameManager';
 
@@ -12,12 +12,13 @@ const { ccclass, property } = _decorator;
 @ccclass('PausePanel')
 export class PausePanel extends Component {
 
+    @property(Node)   content:   Node   = null!;
     @property(Button) resumeBtn: Button = null!;
     @property(Button) lobbyBtn:  Button = null!;
 
     onLoad(): void {
-        EventBus.on(GameEvents.GAME_PAUSE,  () => this.node.active = true);
-        EventBus.on(GameEvents.GAME_RESUME, () => this.node.active = false);
+        EventBus.on(GameEvents.GAME_PAUSE,  () => this.content.active = true);
+        EventBus.on(GameEvents.GAME_RESUME, () => this.content.active = false);
 
         this.resumeBtn?.node.on(Button.EventType.CLICK, () => {
             EventBus.emit(GameEvents.GAME_RESUME);
@@ -27,6 +28,6 @@ export class PausePanel extends Component {
             GameManager.instance?.goToLobby();
         }, this);
 
-        this.node.active = false;
+        this.content.active = false;
     }
 }
