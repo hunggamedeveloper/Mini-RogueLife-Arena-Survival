@@ -7,10 +7,8 @@
 import { _decorator, Component, JsonAsset } from 'cc';
 import { IWaveDef, IEnemyDef, EnemyType } from '../../../shared/scripts/types/GameTypes';
 import { EnemySpawner } from '../enemy/EnemySpawner';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
-import { GameManager } from '../core/GameManager';
-import { GameState } from '../../../shared/scripts/types/GameTypes';
 import { AnalyticsService } from '../../../shared/scripts/services/AnalyticsService';
 
 const { ccclass, property } = _decorator;
@@ -32,7 +30,7 @@ export class WaveManager extends Component {
 
     // Continuous spawn between waves
     private _continuousTimer: number = 0;
-    private _continuousInterval: number = 3;
+    private _continuousInterval: number = 5;
 
     onLoad(): void {
         this._loadEnemyDefs();
@@ -42,8 +40,7 @@ export class WaveManager extends Component {
     }
 
     update(dt: number): void {
-        const gm = GameManager.instance;
-        if (!gm || gm.stateMachine.currentState !== GameState.Gameplay) return;
+        if (!EventBus.playing) return;
 
         this._elapsed += dt;
 
@@ -90,8 +87,8 @@ export class WaveManager extends Component {
 
     private _spawnContinuous(): void {
         // Difficulty: more enemies over time
-        const diffFactor = 1 + Math.floor(this._elapsed / 30) * 0.3;
-        const count      = Math.ceil(3 * diffFactor);
+        const diffFactor = 1 + Math.floor(this._elapsed / 45) * 0.25;
+        const count      = Math.ceil(2 * diffFactor);
         const type       = this._randomEnemyType();
         const def        = this._defForType(type);
         if (def) this.enemySpawner.spawnBatch(def, count);
@@ -114,7 +111,7 @@ export class WaveManager extends Component {
     private _reset(): void {
         this._elapsed          = 0;
         this._waveIndex        = 0;
-        this._continuousTimer  = 3;
+        this._continuousTimer  = 5;
         this._pendingEvents    = [];
     }
 
