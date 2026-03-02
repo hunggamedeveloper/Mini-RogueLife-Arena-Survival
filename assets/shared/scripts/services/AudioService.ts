@@ -4,7 +4,7 @@
 // ============================================================
 
 import { AudioClip, AudioSource, Node, resources, assetManager } from 'cc';
-import { EventBus } from '../../../assets/game/scripts/core/EventBus';
+import { EventBus } from '../core/EventBus';
 import { GameEvents } from '../types/EventTypes';
 import { SaveService } from './SaveService';
 
@@ -15,26 +15,36 @@ class AudioServiceImpl {
     private readonly SFX_POOL_SIZE = 8;
 
     private _clips: Map<string, AudioClip> = new Map();
+    private _eventsRegistered: boolean = false;
 
-    /** Call once after scene with AudioSource nodes is loaded */
+    /** Call once per scene after AudioSource nodes are ready */
     init(bgmNode: Node, sfxPoolNode: Node): void {
-        this._bgmSource = bgmNode.getComponent(AudioSource);
+        this._bgmSource = bgmNode.getComponent(AudioSource) ?? bgmNode.addComponent(AudioSource);
+        this._sfxSources = [];
+        this._sfxIndex = 0;
 
         for (let i = 0; i < this.SFX_POOL_SIZE; i++) {
-            const src = sfxPoolNode.getComponent(AudioSource) ?? sfxPoolNode.addComponent(AudioSource);
+            const child = sfxPoolNode.children[i] ?? new Node(`sfx_${i}`);
+            if (!child.parent) sfxPoolNode.addChild(child);
+            const src = child.getComponent(AudioSource) ?? child.addComponent(AudioSource);
             this._sfxSources.push(src);
         }
 
         this._applyVolumes();
-        this._registerEvents();
+        if (!this._eventsRegistered) {
+            this._registerEvents();
+            this._eventsRegistered = true;
+        }
     }
 
     preloadBundle(bundleName: string, keys: string[]): void {
         assetManager.loadBundle(bundleName, (err, bundle) => {
-            if (err) { console.error('[AudioService] Bundle load error', err); return; }
+            // Skip silently — audio bundle chưa có trong project
+            if (err) return;
             keys.forEach(key => {
                 bundle.load(key, AudioClip, (e, clip) => {
-                    if (e) { console.error('[AudioService] Clip load error', key, e); return; }
+                    // Skip — clip chưa có, audio sẽ bị bỏ qua
+                    if (e) return;
                     this._clips.set(key, clip);
                 });
             });
@@ -57,7 +67,7 @@ class AudioServiceImpl {
     playBGM(key: string, loop: boolean = true): void {
         if (!this._bgmSource) return;
         const clip = this._clips.get(key);
-        if (!clip) { console.warn('[AudioService] BGM clip not found:', key); return; }
+        if (!clip) return; // Skip — BGM clip chưa được load
         this._bgmSource.clip = clip;
         this._bgmSource.loop = loop;
         this._bgmSource.play();
@@ -69,7 +79,7 @@ class AudioServiceImpl {
 
     playSFX(key: string): void {
         const clip = this._clips.get(key);
-        if (!clip) { console.warn('[AudioService] SFX clip not found:', key); return; }
+        if (!clip) return; // Skip — SFX clip chưa được load
         const src = this._sfxSources[this._sfxIndex % this.SFX_POOL_SIZE];
         this._sfxIndex++;
         src.playOneShot(clip, SaveService.data.volumeSFX * SaveService.data.volumeMaster);

@@ -3,6 +3,8 @@
 // UI <-> Gameplay communicate exclusively through here.
 // Using Map<string, Set<Function>> to prevent duplicate listeners
 // and enable O(1) removal.
+// Lives in shared/ (outside all bundles) so core/ and game/ bundles
+// can both import it without circular bundle dependencies.
 // ============================================================
 
 type Callback<T = any> = (payload: T) => void;
@@ -29,6 +31,9 @@ class EventBusImpl {
             cb(payload);
         }
     }
+
+    /** Global gameplay pause flag — set by GameManager, read by all gameplay components */
+    playing: boolean = false;
 
     /** Remove all listeners for an event — use on scene unload */
     clear(event?: string): void {
