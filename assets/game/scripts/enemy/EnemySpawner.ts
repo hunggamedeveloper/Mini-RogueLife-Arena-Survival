@@ -12,8 +12,9 @@ import { EnemyMelee } from './EnemyMelee';
 import { EnemyRanged } from './EnemyRanged';
 import { EnemyTank } from './EnemyTank';
 import { ArenaMap } from '../map/ArenaMap';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
+import { PlayerStats } from '../player/PlayerStats';
 
 const { ccclass, property } = _decorator;
 
@@ -25,6 +26,7 @@ export class EnemySpawner extends Component {
     @property(ArenaMap) arenaMap:    ArenaMap = null!;
 
     private _activeEnemies: EnemyBase[] = [];
+    private _playerStats: PlayerStats | null = null;
 
     get activeEnemies(): ReadonlyArray<EnemyBase> { return this._activeEnemies; }
 
@@ -53,14 +55,15 @@ export class EnemySpawner extends Component {
         const enemy   = pm.get<EnemyBase>(poolKey, this.enemyParent);
         if (!enemy) return;
 
-        enemy.init(def, this.playerNode);
+        if (!this._playerStats) {
+            this._playerStats = this.playerNode.getComponent(PlayerStats);
+        }
+        enemy.init(def, this.playerNode, this._playerStats!);
 
-        // Place at random arena edge
-        const spawnPos = this.arenaMap
-            ? this.arenaMap.randomEdgePoint(20)
-            : { x: (Math.random() - 0.5) * 1400, y: (Math.random() - 0.5) * 800 };
-
-        enemy.node.setWorldPosition(spawnPos.x, spawnPos.y, 0);
+        // Spawn outside visible area, around the player
+        const plPos = this.playerNode.worldPosition;
+        const edge  = this._randomOffscreenOffset(600);
+        enemy.node.setWorldPosition(plPos.x + edge.x, plPos.y + edge.y, 0);
 
         this._activeEnemies.push(enemy);
         EventBus.emit(GameEvents.ENEMY_SPAWNED, { type: def.type });
@@ -76,6 +79,12 @@ export class EnemySpawner extends Component {
             }
         }
         this._activeEnemies.length = write;
+    }
+
+    /** Random offset that lands outside the visible screen */
+    private _randomOffscreenOffset(dist: number): { x: number; y: number } {
+        const angle = Math.random() * Math.PI * 2;
+        return { x: Math.cos(angle) * dist, y: Math.sin(angle) * dist };
     }
 
     private _poolKeyForType(type: EnemyType): string {

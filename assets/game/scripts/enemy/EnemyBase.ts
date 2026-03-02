@@ -8,7 +8,7 @@
 import { _decorator, Component, Vec3, Node } from 'cc';
 import { IPoolable, IEnemyDef, EnemyType } from '../../../shared/scripts/types/GameTypes';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { PoolManager } from '../pool/PoolManager';
 import { Projectile } from '../projectile/Projectile';
 
@@ -55,6 +55,7 @@ export class EnemyBase extends Component implements IPoolable {
 
     update(dt: number): void {
         if (!this._def || !this._playerNode) return;
+        if (!EventBus.playing) return;
         this.onUpdate(dt);
     }
 

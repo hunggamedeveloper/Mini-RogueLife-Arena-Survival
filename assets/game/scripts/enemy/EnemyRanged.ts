@@ -6,7 +6,7 @@ import { _decorator, Node } from 'cc';
 import { EnemyBase } from './EnemyBase';
 import { IEnemyDef, IProjectileData } from '../../../shared/scripts/types/GameTypes';
 import { PoolManager } from '../pool/PoolManager';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 
 const { ccclass } = _decorator;

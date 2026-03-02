@@ -2,10 +2,11 @@
 // EnemyTank.ts — Slow, high HP, deals heavy melee damage.
 // ============================================================
 
-import { _decorator } from 'cc';
+import { _decorator, Component } from 'cc';
 import { EnemyBase } from './EnemyBase';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
+import { PoolManager } from '../pool/PoolManager';
 
 const { ccclass } = _decorator;
 
@@ -28,6 +29,11 @@ export class EnemyTank extends EnemyBase {
                     hpRemaining: -1,
                 });
                 EventBus.emit(GameEvents.AUDIO_PLAY_SFX, { key: 'player_hurt' });
+
+                // Spawn hit VFX at player position
+                const plPos = this._playerNode!.worldPosition;
+                const vfx = PoolManager.instance?.get<Component>('hitEffect', this.node.parent!);
+                if (vfx) vfx.node.setWorldPosition(plPos);
             }
         }
     }

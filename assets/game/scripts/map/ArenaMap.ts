@@ -3,15 +3,21 @@
 // Enemies are allowed to go slightly beyond edge before wrapping.
 // ============================================================
 
-import { _decorator, Component, Node, Vec3 } from 'cc';
+import { _decorator, Component, Node, Vec3, view } from 'cc';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('ArenaMap')
 export class ArenaMap extends Component {
 
-    @property halfWidth:  number = 800;   // half-width  of playfield in world units
-    @property halfHeight: number = 450;   // half-height of playfield in world units
+    @property({ tooltip: 'Auto-detect bounds from visible screen size' })
+    autoDetectBounds: boolean = true;
+
+    @property({ tooltip: 'Manual half-width (used when autoDetect is off)' })
+    halfWidth:  number = 800;
+
+    @property({ tooltip: 'Manual half-height (used when autoDetect is off)' })
+    halfHeight: number = 450;
 
     @property(Node) playerNode: Node = null!;
 
@@ -19,6 +25,11 @@ export class ArenaMap extends Component {
     private _max: Vec3 = new Vec3();
 
     onLoad(): void {
+        if (this.autoDetectBounds) {
+            const visibleSize = view.getVisibleSize();
+            this.halfWidth  = visibleSize.width  / 2;
+            this.halfHeight = visibleSize.height / 2;
+        }
         Vec3.set(this._min, -this.halfWidth,  -this.halfHeight, 0);
         Vec3.set(this._max,  this.halfWidth,   this.halfHeight, 0);
     }
@@ -40,16 +51,23 @@ export class ArenaMap extends Component {
         }
     }
 
-    /** Returns a random point on the edge of the arena at the given inset distance */
-    randomEdgePoint(inset: number = 0): { x: number; y: number } {
-        const side = Math.floor(Math.random() * 4);
-        const hw   = this.halfWidth  - inset;
-        const hh   = this.halfHeight - inset;
+    /**
+     * Returns a random point OUTSIDE the visible area from top, left, or right edges.
+     * @param margin distance beyond the screen edge (default 80)
+     */
+    randomEdgePoint(margin: number = 80): { x: number; y: number } {
+        const hw = this.halfWidth;
+        const hh = this.halfHeight;
+
+        // 0 = top, 1 = left, 2 = right (no bottom)
+        const side = Math.floor(Math.random() * 3);
         switch (side) {
-            case 0: return { x: (Math.random() * 2 - 1) * hw, y:  hh };
-            case 1: return { x: (Math.random() * 2 - 1) * hw, y: -hh };
-            case 2: return { x:  hw, y: (Math.random() * 2 - 1) * hh };
-            default:return { x: -hw, y: (Math.random() * 2 - 1) * hh };
+            // Top: above screen, random x spanning full width + margin
+            case 0: return { x: (Math.random() * 2 - 1) * (hw + margin), y: hh + margin };
+            // Left: left of screen, random y from bottom to top
+            case 1: return { x: -(hw + margin), y: (Math.random() * 2 - 1) * hh };
+            // Right: right of screen, random y from bottom to top
+            default: return { x: hw + margin, y: (Math.random() * 2 - 1) * hh };
         }
     }
 
