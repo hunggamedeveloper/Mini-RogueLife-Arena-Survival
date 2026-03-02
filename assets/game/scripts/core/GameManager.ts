@@ -7,10 +7,14 @@ import { _decorator, Component, Node, director } from 'cc';
 import { GameState, IGameResult } from '../../../shared/scripts/types/GameTypes';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 import { StateMachine } from './StateMachine';
-import { EventBus } from './EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { EnemyBase } from '../enemy/EnemyBase';
 import { EnemySpawner } from '../enemy/EnemySpawner';
+import { Projectile } from '../projectile/Projectile';
+import { PoolManager } from '../pool/PoolManager';
+import { PlayerStats } from '../player/PlayerStats';
 import { SaveService } from '../../../shared/scripts/services/SaveService';
+import { AudioService } from '../../../shared/scripts/services/AudioService';
 
 const { ccclass, property } = _decorator;
 
@@ -25,6 +29,8 @@ export class GameManager extends Component {
     @property(Node) waveManagerNode:    Node = null!;
     @property(Node) upgradeManagerNode: Node = null!;
     @property(Node) hudNode:            Node = null!;
+    @property(Node) bgmNode:            Node = null!;
+    @property(Node) sfxPoolNode:        Node = null!;
     @property(EnemySpawner) enemySpawner: EnemySpawner = null!;
 
     /** Exposed for AutoShooter nearest-enemy lookup */
@@ -37,9 +43,20 @@ export class GameManager extends Component {
     private _killCount: number = 0;
     private _isGameActive: boolean = false;
 
+    private _setPlaying(v: boolean): void {
+        this._isGameActive = v;
+        EventBus.playing = v;
+    }
+
+    // Reusable arrays to avoid allocation each frame
+    private _bulletCache: Projectile[] = [];
+    private _enemyBulletCache: Projectile[] = [];
+    private _playerStats: PlayerStats | null = null;
+
     get stateMachine(): StateMachine { return this._sm; }
     get elapsedTime(): number { return this._elapsedTime; }
     get killCount(): number { return this._killCount; }
+    get isPlaying(): boolean { return this._isGameActive; }
 
     onLoad(): void {
         if (GameManager._instance && GameManager._instance !== this) {
@@ -47,6 +64,8 @@ export class GameManager extends Component {
             return;
         }
         GameManager._instance = this;
+        AudioService.init(this.bgmNode, this.sfxPoolNode);
+        AudioService.preloadBundle('audio', ['gameplay_bgm', 'sfx_shoot', 'sfx_hit', 'sfx_death']);
         this._registerStates();
         this._registerListeners();
     }
@@ -73,15 +92,17 @@ export class GameManager extends Component {
         this._sm.register({
             name: GameState.Gameplay,
             onEnter: (_prev) => {
-                this._isGameActive = true;
+                this._setPlaying(true);
                 this._elapsedTime = 0;
                 this._killCount = 0;
                 EventBus.emit(GameEvents.GAME_START);
             },
             onExit: (_next) => {
-                this._isGameActive = false;
+                this._setPlaying(false);
             },
-            onUpdate: (_dt) => {},
+            onUpdate: (_dt) => {
+                this._checkCollisions();
+            },
         });
 
         this._sm.register({
@@ -124,6 +145,79 @@ export class GameManager extends Component {
         EventBus.on(GameEvents.ENEMY_DIED, () => {
             this._killCount++;
         });
+
+        EventBus.on<{ level: number }>(GameEvents.PLAYER_DIED, ({ level }) => {
+            if (this._isGameActive) {
+                this.triggerGameOver(level);
+            }
+        });
+
+        // Pause/resume game time for upgrade panel without entering Pause state
+        EventBus.on(GameEvents.UI_UPGRADE_PANEL_OPEN, () => {
+            this._setPlaying(false);
+        });
+        EventBus.on(GameEvents.UI_UPGRADE_PANEL_CLOSE, () => {
+            if (this._sm.currentState === GameState.Gameplay) {
+                this._setPlaying(true);
+            }
+        });
+    }
+
+    private _checkCollisions(): void {
+        const pm = PoolManager.instance;
+        if (!pm) return;
+
+        // --- Player bullets → Enemies ---
+        const bulletNodes = pm.getActiveNodes('bulletPlayer');
+        if (bulletNodes && bulletNodes.size > 0) {
+            const enemies = this.enemySpawner?.activeEnemies;
+            if (enemies && enemies.length > 0) {
+                this._bulletCache.length = 0;
+                for (const node of bulletNodes) {
+                    if (!node.active) continue;
+                    const proj = node.getComponent('Projectile') as Projectile;
+                    if (proj) this._bulletCache.push(proj);
+                }
+                for (const enemy of enemies) {
+                    if (!enemy.isValid || !enemy.node.active) continue;
+                    enemy.checkBulletCollision(this._bulletCache);
+                }
+            }
+        }
+
+        // --- Enemy bullets → Player ---
+        const enemyBulletNodes = pm.getActiveNodes('bulletEnemy');
+        if (!enemyBulletNodes || enemyBulletNodes.size === 0) return;
+
+        const playerNode = this.enemySpawner?.playerNode;
+        if (!playerNode) return;
+
+        if (!this._playerStats) {
+            this._playerStats = playerNode.getComponent('PlayerStats') as PlayerStats;
+        }
+        if (!this._playerStats) return;
+
+        const plPos = playerNode.worldPosition;
+        const hitRadius = 30; // player hit radius px
+        const hitRadiusSq = hitRadius * hitRadius;
+
+        this._enemyBulletCache.length = 0;
+        for (const node of enemyBulletNodes) {
+            if (!node.active) continue;
+            const proj = node.getComponent('Projectile') as Projectile;
+            if (proj && !proj.isPlayerOwned) this._enemyBulletCache.push(proj);
+        }
+
+        for (const b of this._enemyBulletCache) {
+            if (!b.isValid || !b.node.active) continue;
+            const bp = b.node.worldPosition;
+            const dx = bp.x - plPos.x;
+            const dy = bp.y - plPos.y;
+            if (dx * dx + dy * dy < hitRadiusSq) {
+                b.registerHit();
+                this._playerStats.takeDamage(b.damage);
+            }
+        }
     }
 
     triggerGameOver(level: number): void {

@@ -4,7 +4,7 @@
 // ============================================================
 
 import { GameState, IState } from '../../../shared/scripts/types/GameTypes';
-import { EventBus } from './EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 
 export class StateMachine {
