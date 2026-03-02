@@ -5,7 +5,7 @@
 
 import { _decorator, Component, JsonAsset } from 'cc';
 import { IUpgradeDef } from '../../../shared/scripts/types/GameTypes';
-import { EventBus } from '../core/EventBus';
+import { EventBus } from '../../../shared/scripts/core/EventBus';
 import { GameEvents } from '../../../shared/scripts/types/EventTypes';
 import { PlayerStats } from '../player/PlayerStats';
 import { AnalyticsService } from '../../../shared/scripts/services/AnalyticsService';
@@ -38,9 +38,7 @@ export class UpgradeManager extends Component {
 
     private _onLevelUp(newLevel: number): void {
         const options = this._pickOptions();
-        // Re-emit level up with filled options for UpgradePanel
-        EventBus.emit(GameEvents.UI_UPGRADE_PANEL_OPEN);
-        EventBus.emit(GameEvents.PLAYER_LEVEL_UP, { newLevel, options });
+        EventBus.emit(GameEvents.UI_UPGRADE_PANEL_OPEN, { newLevel, options });
     }
 
     /** Weighted random without replacement — respects maxStacks */
@@ -81,7 +79,5 @@ export class UpgradeManager extends Component {
         if (applied) {
             AnalyticsService.trackUpgradeChosen(id, this.playerStats.level);
         }
-
-        EventBus.emit(GameEvents.UI_UPGRADE_PANEL_CLOSE);
     }
 }
